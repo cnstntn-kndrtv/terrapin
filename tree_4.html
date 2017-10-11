@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+    circle {
+        stroke-width: 1.5px;
+    }
+
+    line {
+        stroke: #999;
+        stroke-width: 1.5px;
+    }
+</style>
+
+<body>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+        var width = 960,
+            height = 500,
+            radius = 6;
+
+        var fill = d3.scaleOrdinal(d3.schemeCategory20);
+
+        var force = d3.forceSimulation()
+            .force('charge', d3.forceManyBody().strength(-30))
+            .force('link', d3.forceLink()
+                            .id( (d) => { return d.index } )
+                            .distance(200)
+                            .strength( (d) => { return d.index * 0.3 } )
+            )
+            .force('center', d3.forceCenter( width / 2, height / 2) )
+
+        var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        d3.json("tree.json", function (error, json) {
+            if (error) throw error;
+
+            var link = svg.selectAll("line")
+                .data(json.links)
+                .enter().append("line");
+
+            var node = svg.selectAll("circle")
+                .data(json.nodes)
+                .enter().append("circle")
+                .attr("r", radius - .75)
+                .attr('name', (d) => d.name)
+                .style("fill", function (d) {
+                    return fill(d.group);
+                })
+                .style("stroke", function (d) {
+                    return d3.rgb(fill(d.group)).darker();
+                })
+                .call(d3.drag()
+                        .on('start', dragStarted)
+                        .on('drag', dragged)
+                        .on('end', dragEnded))
+            
+            force
+                .nodes(json.nodes)
+                .on("tick", tick);
+            
+            force
+                .force('link')
+                .links(json.links);
+
+            function tick(e) {
+                var k = 6 * this.alpha();
+                // Push sources up and targets down to form a weak tree.
+                link
+                    .each(function (d) {
+                        d.source.x -= k; 
+                        d.target.x += k;
+                    })
+                    .attr("x1", function (d) {
+                        return d.source.x;
+                    })
+                    .attr("y1", function (d) {
+                        return d.source.y;
+                    })
+                    .attr("x2", function (d) {
+                        return d.target.x;
+                    })
+                    .attr("y2", function (d) {
+                        return d.target.y;
+                    });
+
+                node
+                    .attr("cx", function (d) {
+                        return d.x;
+                    })
+                    .attr("cy", function (d) {
+                        return d.y;
+                    });
+
+            }
+
+            function dragStarted(d) {
+                d3.event.sourceEvent.stopPropagation();
+                if (!d3.event.active) force.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+                d3.select(this)
+                    .classed("dragging", true)
+                    .style('cursor', 'move');
+            }
+
+            function dragged(d) {
+                d.fx = d3.event.x;
+                d.fy = d3.event.y;
+            }
+
+            function dragEnded(d) {
+                if (!d3.event.active) force.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+                d3.select(this)
+                    .classed("dragging", false)
+                    .style('cursor', 'default');
+            }
+        });
+    </script>
+</body>

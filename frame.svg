@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Слой_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="1036.5px" height="658.5px" viewBox="0 0 1036.5 658.5" enable-background="new 0 0 1036.5 658.5" xml:space="preserve">
+<path fill="#ED973A" d="M346,155c0,2.762-2.239,5-5,5H111c-2.761,0-5-2.238-5-5v-50c0-2.762,2.239-5,5-5h230c2.761,0,5,2.238,5,5
+	V155z"/>
+<rect x="106" y="130" fill="#DDDDDD" stroke="#FFFFFF" stroke-miterlimit="10" width="240" height="146.417"/>
+<rect x="118.833" y="107" fill="none" width="217.833" height="18"/>
+<text transform="matrix(1 0 0 1 170.5977 116)" font-family="'Roboto-Regular'" font-size="12">microsoft apple store</text>
+<circle fill="#C9C9C9" stroke="#FFFFFF" stroke-miterlimit="10" cx="106" cy="115" r="6"/>
+<rect x="100" y="140" display="none" fill="none" stroke="#2395E2" stroke-miterlimit="10" width="120" height="40"/>
+<rect x="111" y="141.25" fill="none" width="115" height="12.25"/>
+<text transform="matrix(1 0 0 1 111 149.5)" font-family="'Roboto-Regular'" font-size="11">rdfs:label</text>
+<path fill="#9BCAEA" d="M356,153c0,2.761-2.239,5-5,5H236c-2.761,0-5-2.239-5-5v-13c0-2.761,2.239-5,5-5h115c2.761,0,5,2.239,5,5
+	V153z"/>
+<rect x="236" y="140" fill="none" width="115" height="13.5"/>
+<text transform="matrix(1 0 0 1 236 148.25)" font-family="'Roboto-Regular'" font-size="11">rdfs:label</text>
+<rect x="111.001" y="174.25" fill="none" width="115" height="38.75"/>
+<text transform="matrix(1 0 0 1 112 218)" font-family="'Roboto-Regular'" font-size="11">lemon:canonicalForm</text>
+<path fill="#C1E89C" d="M356,213c0,2.761-2.238,5-5,5H236c-2.761,0-5-2.239-5-5v-40c0-2.761,2.239-5,5-5h115c2.762,0,5,2.239,5,5
+	V213z"/>
+<rect x="236" y="173" fill="none" width="115" height="40"/>
+<text transform="matrix(1 0 0 1 236.001 181.25)" font-family="'Roboto-Regular'" font-size="11">123456789_12345678</text>
+<text transform="matrix(1 0 0 1 236.001 194.4502)" font-family="'Roboto-Regular'" font-size="11">9_123456789_1234567</text>
+<text transform="matrix(1 0 0 1 236.001 207.6504)" font-family="'Roboto-Regular'" font-size="11">89_123456789_</text>
+<path fill="#C1E89C" d="M356,267c0,2.761-2.238,5-5,5H236c-2.761,0-5-2.239-5-5v-40c0-2.761,2.239-5,5-5h115c2.762,0,5,2.239,5,5
+	V267z"/>
+<text transform="matrix(1 0 0 1 236.001 235.25)" font-family="'Roboto-Regular'" font-size="11">123456789_12345678</text>
+<text transform="matrix(1 0 0 1 236.001 248.4502)" font-family="'Roboto-Regular'" font-size="11">9_123456789_1234567</text>
+<text transform="matrix(1 0 0 1 236.001 261.6504)" font-family="'Roboto-Regular'" font-size="11">89_123456789_</text>
+<line fill="none" stroke="#FFFFFF" stroke-miterlimit="10" x1="106" y1="162.75" x2="346" y2="162.75"/>
+</svg>
