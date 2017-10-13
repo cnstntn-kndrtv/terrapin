@@ -456,13 +456,13 @@ var fromDB_aff = [
 
 //chatBot
 var fromDB = [
-    {subject: 'hi_base', predicate: 'input', object: 'hi' },
-    {subject: 'hi_base', predicate: 'contextInput', object: 'null' },
+    {subject: 'hi_base', predicate: 'input', object: 'hi', visible: false },
+    {subject: 'hi_base', predicate: 'contextInput', object: 'null', visible: false},
     {subject: 'hi_base', predicate: 'context', object: 'c1' },
     {subject: 'hi_base', predicate: 'response', object: 'whats ur name?_c1' },
     {subject: 'hi_base', predicate: 'action', object: '() => {}' },
 
-    {subject: 'whats ur name?_c1', predicate: 'input', object: 'null' },
+    {subject: 'whats ur name?_c1', predicate: 'input', object: 'null', visible: false },
     {subject: 'whats ur name?_c1', predicate: 'context', object: 'c1' },
     {subject: 'whats ur name?_c1', predicate: 'response', object: 'nice to meet u' },
     {subject: 'whats ur name?_c1', predicate: 'action', object: '() => {}' },
@@ -480,6 +480,10 @@ var uniqueSubjects = new Map(),
 fromDB.forEach((triple) => {
     uniqueSubjects.set(triple.subject);
     uniquePredicates.set(triple.predicate);
+    // if (!triple.hasOwnProperty('visible') || triple.visible){
+    //     uniqueObjects.set(triple.object);
+    //     uniqueSubjectsAndObjects.add(triple.object);
+    // } 
     uniqueObjects.set(triple.object);
 
     uniqueSubjectsAndObjects.add(triple.subject);
@@ -490,12 +494,16 @@ fromDB.forEach((triple) => {
 uniqueSubjectsAndObjects.forEach( (subject) => {
     let triples = [],
         uniquePredicates = new Set(),
-        predicates = {};
-    
+        predicates = {},
+        visible = true;
+
     fromDB.forEach( (triple) => {
         if (triple.subject == subject) {
             triples.push(triple);
             uniquePredicates.add(triple.predicate);
+        }
+        else if (triple.object == subject) {
+            if (triple.hasOwnProperty('visible') && !triple.visible) visible = false;
         }
     })
     uniquePredicates.forEach( (predicate) => {
@@ -517,6 +525,7 @@ uniqueSubjectsAndObjects.forEach( (subject) => {
         numOfIncomes: 0,
         numOfOutcomes: 0,
         selected: false,
+        visible: visible,
         get x2() {
             return this.x + this.width;
         },
@@ -553,6 +562,12 @@ data.nodes.forEach((n) => {
         }
     }
 })
+
+
+uniqueSubjects = null,
+uniquePredicates = null,
+uniqueObjects = null,
+uniqueSubjectsAndObjects = null;
 
 var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -659,196 +674,214 @@ function createNodes(nodes) {
                     .attr('id', (d) => { return d.id; })
                     .call(drag)
     
+    let cleanNode = d3.select(createElement('point'));
     // node title
     graph.nodes.append((d) => {
-        let title = d3.select(createElement('svg'));
-        let titlePillow = d3.select(createElement('rect'));
-        let titleText = d3.select(createElement('text'));
-        titleText
-            .attr('class', 'terrapin-title-text')
-            .attr('y', terrapinViewConfig.contentIndent)
-            .attr('x', terrapinViewConfig.connectorRadius * 2 + terrapinViewConfig.contentIndent)
-            .text(d.label)
-                .call(wrapText, terrapinViewConfig.subjectTextWidth, terrapinViewConfig.subjectTextMaxStrings);
-
-        let titleTextHeight = getSizeNotRendered(titleText).height;
-
-        titlePillow
-            .attr('class', 'terrapin-title-pillow')
-            .attr('x', terrapinViewConfig.connectorRadius + 1)
-            .attr('width', terrapinViewConfig.terrapinWidth - 2)
-            .attr('height', titleTextHeight + terrapinViewConfig.contentIndent * 2)
-            .attr('rx', 5)
-            .attr('fill', () => { return color(d.id)});
-        
-        
-        if (Object.keys(d.predicates).length) d.bodyY = titleTextHeight + terrapinViewConfig.contentIndent;
-        else d.bodyY = titleTextHeight + terrapinViewConfig.contentIndent * 2;
-        
-        title.attr('class', 'terrapin-title');
-        title.append(() => { return titlePillow.node() });
-        title.append(() => { return titleText.node() });
-        title.on('dblclick', clicked);
-        d.titleElement = title.node();
-        return title.node();
+        if (d.visible) {
+            let title = d3.select(createElement('svg'));
+            let titlePillow = d3.select(createElement('rect'));
+            let titleText = d3.select(createElement('text'));
+            titleText
+                .attr('class', 'terrapin-title-text')
+                .attr('y', terrapinViewConfig.contentIndent)
+                .attr('x', terrapinViewConfig.connectorRadius * 2 + terrapinViewConfig.contentIndent)
+                .text(d.label)
+                    .call(wrapText, terrapinViewConfig.subjectTextWidth, terrapinViewConfig.subjectTextMaxStrings);
+    
+            let titleTextHeight = getSizeNotRendered(titleText).height;
+    
+            titlePillow
+                .attr('class', 'terrapin-title-pillow')
+                .attr('x', terrapinViewConfig.connectorRadius + 1)
+                .attr('width', terrapinViewConfig.terrapinWidth - 2)
+                .attr('height', titleTextHeight + terrapinViewConfig.contentIndent * 2)
+                .attr('rx', 5)
+                .attr('fill', () => { return color(d.id)});
+            
+            
+            if (Object.keys(d.predicates).length) d.bodyY = titleTextHeight + terrapinViewConfig.contentIndent;
+            else d.bodyY = titleTextHeight + terrapinViewConfig.contentIndent * 2;
+            
+            title.attr('class', 'terrapin-title');
+            title.append(() => { return titlePillow.node() });
+            title.append(() => { return titleText.node() });
+            title.on('dblclick', clicked);
+            d.titleElement = title.node();
+            return title.node();
+        } else return cleanNode.node();
     })
+
     // node title connector
-    graph.nodes.append('circle')
-        .attr('class', 'terrapin-connection-point')
-        .attr('r', terrapinViewConfig.connectorRadius)
-        .attr('cx', terrapinViewConfig.connectorRadius)
-        .attr('cy', terrapinViewConfig.subjectPillowHeight / 2)
+    graph.nodes.append((d) => {
+        if (d.visible) {
+            let circle = d3.select(createElement('circle'));
+            circle.attr('class', 'terrapin-connection-point')
+                .attr('r', terrapinViewConfig.connectorRadius)
+                .attr('cx', terrapinViewConfig.connectorRadius)
+                .attr('cy', terrapinViewConfig.subjectPillowHeight / 2)
+            return circle.node();
+        } else return cleanNode.node();
+    })
+    // graph.nodes.append('circle')
+    //     .attr('class', 'terrapin-connection-point')
+    //     .attr('r', terrapinViewConfig.connectorRadius)
+    //     .attr('cx', terrapinViewConfig.connectorRadius)
+    //     .attr('cy', terrapinViewConfig.subjectPillowHeight / 2)
 
     // node body
     graph.nodes.append((d) => {
-        let body = d3.select(createElement('svg'));
-        body.attr('class', 'terrapin-body')
-            .attr('x', terrapinViewConfig.connectorRadius)
-            .attr('y', d.bodyY)
-        
-        let id,
-            objectColor,
-            bodyBlock, 
-            predicateBlock, 
-            objectsBlock, 
-            objectPillow, 
-            objectText, 
-            objectPillowHeight, 
-            predicateBlockHeight, 
-            objectsBlockHeight,
-            objectPillowY,
-            objectsBlockY = 0,
-            predicateBlockY,
-            maxHeight = 0,
-            objects,
-            bodyBlockY = 0,
-            offsetx,
-            offsety;
+        if (d.visible) {
+            let body = d3.select(createElement('svg'));
+            body.attr('class', 'terrapin-body')
+                .attr('x', terrapinViewConfig.connectorRadius)
+                .attr('y', d.bodyY)
+            
+            let id,
+                objectColor,
+                bodyBlock, 
+                predicateBlock, 
+                objectsBlock, 
+                objectPillow, 
+                objectText, 
+                objectPillowHeight, 
+                predicateBlockHeight, 
+                objectsBlockHeight,
+                objectPillowY,
+                objectsBlockY = 0,
+                predicateBlockY,
+                maxHeight = 0,
+                objects,
+                bodyBlockY = 0,
+                offsetx,
+                offsety;
 
-        for (let predicate in d.predicates) {
-            if (d.predicates.hasOwnProperty(predicate)) {
-                objects = d.predicates[predicate];
-                bodyBlock = d3.select(createElement('svg'));
-                predicateBlock = d3.select(createElement('text'));
-                objectsBlock = d3.select(createElement('svg'));
-                objectPillowY = 0;
+            for (let predicate in d.predicates) {
+                if (d.predicates.hasOwnProperty(predicate)) {
+                    objects = d.predicates[predicate];
+                    bodyBlock = d3.select(createElement('svg'));
+                    predicateBlock = d3.select(createElement('text'));
+                    objectsBlock = d3.select(createElement('svg'));
+                    objectPillowY = 0;
 
-                for(let object in objects) {
-                    objectPillow = d3.select(createElement('svg'));
-                    objectText = d3.select(createElement('text'));
+                    for(let object in objects) {
+                        objectPillow = d3.select(createElement('svg'));
+                        objectText = d3.select(createElement('text'));
 
-                    // object text create
-                    objectText
-                        .attr('class', 'terrapin-object-text')
-                        .attr('x', terrapinViewConfig.contentIndent)
-                        .attr('y', terrapinViewConfig.contentIndent)
-                        .text(object)
-                            .call(wrapText, terrapinViewConfig.objectTextWidth, terrapinViewConfig.objectTextMaxStrings);
+                        // object text create
+                        objectText
+                            .attr('class', 'terrapin-object-text')
+                            .attr('x', terrapinViewConfig.contentIndent)
+                            .attr('y', terrapinViewConfig.contentIndent)
+                            .text(object)
+                                .call(wrapText, terrapinViewConfig.objectTextWidth, terrapinViewConfig.objectTextMaxStrings);
 
-                    objectPillowHeight = getSizeNotRendered(objectText).height  + terrapinViewConfig.contentIndent * 2;
+                        objectPillowHeight = getSizeNotRendered(objectText).height  + terrapinViewConfig.contentIndent * 2;
 
-                    objectColor = color(object);
+                        objectColor = color(object);
 
-                    // object pillow create
-                    objectPillow
-                        .attr('class', 'terrapin-object')
-                        .append('rect')
-                            .attr('class', 'terrapin-object-pillow')
-                            .attr('width', terrapinViewConfig.objectTextWidth + terrapinViewConfig.contentIndent * 2)
-                            .attr('height', objectPillowHeight)
-                            .attr('rx', 5)
-                            .attr('fill', objectColor)
+                        // object pillow create
+                        objectPillow
+                            .attr('class', 'terrapin-object')
+                            .append('rect')
+                                .attr('class', 'terrapin-object-pillow')
+                                .attr('width', terrapinViewConfig.objectTextWidth + terrapinViewConfig.contentIndent * 2)
+                                .attr('height', objectPillowHeight)
+                                .attr('rx', 5)
+                                .attr('fill', objectColor)
 
-                    // connection point
-                    id = d.id + terrapinViewConfig.tripleDelimiter + predicate + terrapinViewConfig.tripleDelimiter + object;
-                    objectPillow
-                        .append('circle')
-                            .attr('id', id)
-                            .attr('class', 'sourceNodes')
-                            .attr('cx', terrapinViewConfig.objectTextWidth + terrapinViewConfig.contentIndent * 2)
-                            .attr('cy', objectPillowHeight / 2)
-                            .attr('r', terrapinViewConfig.connectorRadius)
-                            .attr('fill', objectColor)
-                    // bind data
-                    offsetx = terrapinViewConfig.connectorRadius + terrapinViewConfig.predicateTextWidth + terrapinViewConfig.objectTextWidth + terrapinViewConfig.contentIndent * 4;
-                    offsety = d.bodyY + bodyBlockY + objectPillowY + terrapinViewConfig.contentIndent + objectPillowHeight / 2;
-                    for (var i = 0, l = data.links.length; i < l; i++) {
-                        if (data.links[i].fullViewSource == id) {
-                            data.links[i].offsetx = offsetx;
-                            data.links[i].offsety = offsety;
-                            break;
+                        // connection point
+                        id = d.id + terrapinViewConfig.tripleDelimiter + predicate + terrapinViewConfig.tripleDelimiter + object;
+                        objectPillow
+                            .append('circle')
+                                .attr('id', id)
+                                .attr('class', 'sourceNodes')
+                                .attr('cx', terrapinViewConfig.objectTextWidth + terrapinViewConfig.contentIndent * 2)
+                                .attr('cy', objectPillowHeight / 2)
+                                .attr('r', terrapinViewConfig.connectorRadius)
+                                .attr('fill', objectColor)
+                        // bind data
+                        offsetx = terrapinViewConfig.connectorRadius + terrapinViewConfig.predicateTextWidth + terrapinViewConfig.objectTextWidth + terrapinViewConfig.contentIndent * 4;
+                        offsety = d.bodyY + bodyBlockY + objectPillowY + terrapinViewConfig.contentIndent + objectPillowHeight / 2;
+                        for (var i = 0, l = data.links.length; i < l; i++) {
+                            if (data.links[i].fullViewSource == id) {
+                                data.links[i].offsetx = offsetx;
+                                data.links[i].offsety = offsety;
+                                break;
+                            }
                         }
+
+                        // object assembly
+                        objectPillow
+                            .append(() => { return objectText.node(); });
+                        
+                        objectPillow.on('dblclick', clicked);
+                        
+                        objectsBlock
+                            .append(() => { return objectPillow.node(); })
+                                .attr('y',  objectPillowY);
+                        
+                        // для позиционирования террапинов по Y во время расстановки
+                        d.predicates[predicate][object].yOffset = objectPillowY;
+                        d.predicates[predicate][object].element = objectPillow.node();
+                        objectPillow.datum(d);
+                        objectPillowY += objectPillowHeight + terrapinViewConfig.contentIndent;
                     }
 
-                    // object assembly
-                    objectPillow
-                        .append(() => { return objectText.node(); });
-                    
-                    objectPillow.on('dblclick', clicked);
-                    
-                    objectsBlock
-                        .append(() => { return objectPillow.node(); })
-                            .attr('y',  objectPillowY);
+                    // predicate 
+                    predicateBlock
+                        .attr('x', terrapinViewConfig.contentIndent)
+                        .attr('class', 'terrapin-predicate-text')
+                        .text(predicate)
+                            .call(wrapText, terrapinViewConfig.predicateTextWidth, terrapinViewConfig.predicateTextMaxStrings);
+
+                    predicateBlockHeight = getSizeNotRendered(predicateBlock).height;
+                    objectsBlockHeight = getSizeNotRendered(objectsBlock).height;
+
+                    if (predicateBlockHeight > objectsBlockHeight) {
+                        maxHeight = predicateBlockHeight + terrapinViewConfig.contentIndent * 2;
+                        predicateBlockY = terrapinViewConfig.contentIndent;
+                        objectsBlockY = verticalAlign(objectsBlockHeight, maxHeight, predicateBlockY);
+                    } else {
+                        maxHeight = objectsBlockHeight + terrapinViewConfig.contentIndent * 2;
+                        objectsBlockY = terrapinViewConfig.contentIndent;
+                        predicateBlockY = verticalAlign(predicateBlockHeight, maxHeight, objectsBlockY);
+                    }
+                    bodyBlock
+                        .attr('y', bodyBlockY)
+                        .append('rect')
+                            .attr('width', terrapinViewConfig.terrapinWidth)
+                            .attr('height', maxHeight)
+                            .attr('class', 'terrapin-body-block');
+
+                    bodyBlock
+                        .append(() => { return predicateBlock.node(); })
+                            .attr('y', predicateBlockY);
+
+                    bodyBlock
+                        .append(() => { return objectsBlock.node(); })
+                            .attr('y', objectsBlockY)
+                            .attr('x', terrapinViewConfig.predicateTextWidth + terrapinViewConfig.contentIndent * 2);
                     
                     // для позиционирования террапинов по Y во время расстановки
-                    d.predicates[predicate][object].yOffset = objectPillowY;
-                    d.predicates[predicate][object].element = objectPillow.node();
-                    objectPillow.datum(d);
-                    objectPillowY += objectPillowHeight + terrapinViewConfig.contentIndent;
+                    for(object in d.predicates[predicate]) {
+                        d.predicates[predicate][object].yOffset += bodyBlockY;
+                    }
+
+                    bodyBlockY += maxHeight;
+                    body.append(() => { return bodyBlock.node() });
                 }
-
-                // predicate 
-                predicateBlock
-                    .attr('x', terrapinViewConfig.contentIndent)
-                    .attr('class', 'terrapin-predicate-text')
-                    .text(predicate)
-                        .call(wrapText, terrapinViewConfig.predicateTextWidth, terrapinViewConfig.predicateTextMaxStrings);
-
-                predicateBlockHeight = getSizeNotRendered(predicateBlock).height;
-                objectsBlockHeight = getSizeNotRendered(objectsBlock).height;
-
-                if (predicateBlockHeight > objectsBlockHeight) {
-                    maxHeight = predicateBlockHeight + terrapinViewConfig.contentIndent * 2;
-                    predicateBlockY = terrapinViewConfig.contentIndent;
-                    objectsBlockY = verticalAlign(objectsBlockHeight, maxHeight, predicateBlockY);
-                } else {
-                    maxHeight = objectsBlockHeight + terrapinViewConfig.contentIndent * 2;
-                    objectsBlockY = terrapinViewConfig.contentIndent;
-                    predicateBlockY = verticalAlign(predicateBlockHeight, maxHeight, objectsBlockY);
-                }
-                bodyBlock
-                    .attr('y', bodyBlockY)
-                    .append('rect')
-                        .attr('width', terrapinViewConfig.terrapinWidth)
-                        .attr('height', maxHeight)
-                        .attr('class', 'terrapin-body-block');
-
-                bodyBlock
-                    .append(() => { return predicateBlock.node(); })
-                        .attr('y', predicateBlockY);
-
-                bodyBlock
-                    .append(() => { return objectsBlock.node(); })
-                        .attr('y', objectsBlockY)
-                        .attr('x', terrapinViewConfig.predicateTextWidth + terrapinViewConfig.contentIndent * 2);
-                
-                // для позиционирования террапинов по Y во время расстановки
-                for(object in d.predicates[predicate]) {
-                    d.predicates[predicate][object].yOffset += bodyBlockY;
-                }
-
-                bodyBlockY += maxHeight;
-                body.append(() => { return bodyBlock.node() });
             }
-        }
-        d.height = bodyBlockY + d.bodyY + 0;
-        d.width = terrapinViewConfig.connectorRadius * 2 + terrapinViewConfig.predicateTextWidth + terrapinViewConfig.objectTextWidth + terrapinViewConfig.contentIndent * 4;
-        return body.node();
+            d.height = bodyBlockY + d.bodyY + 0;
+            d.width = terrapinViewConfig.connectorRadius * 2 + terrapinViewConfig.predicateTextWidth + terrapinViewConfig.objectTextWidth + terrapinViewConfig.contentIndent * 4;
+            return body.node();
+        } else return cleanNode.node();
     })
 }
 
 // links
 function createlinkss(links) {
+    let cleanNode = d3.select(createElement('point'));
+
     graph.links = canvas
         .append('g')
             .attr('class', 'links')
@@ -857,15 +890,22 @@ function createlinkss(links) {
             .enter()
                 .append('g')
     
-    graph.links.append((d) => {
-        let path = d3.select(createElement('path'));
-
-        path.attr('fill', 'none')
-            .attr('stroke', color(d.target));
-        
-        d.element = path.node();
-
-        return path.node();
+    graph.links.append((link) => {
+        let visible = true;
+        for (let i = 0; i < data.nodes.length; i++) {
+            let node = data.nodes[i];
+            if (node.id == link.target && !node.visible) {
+                visible = false;
+                break;
+            }
+        }
+        if (visible) {
+            let path = d3.select(createElement('path'));
+            path.attr('fill', 'none')
+                .attr('stroke', color(link.target));
+            link.element = path.node();
+            return path.node();
+        } else return cleanNode.node();
     })
 }
 
@@ -1213,7 +1253,7 @@ function dragEnded(d) {
     d3.select(this)
         .classed("dragging", false)
         .style('cursor', 'default');
-    checkIntersection();
+    // checkIntersection();
 }
 
 
