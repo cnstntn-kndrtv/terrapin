@@ -1,0 +1,29 @@
+{
+  "name": "terrapin",
+  "version": "1.0.0",
+  "description": "can't touch this",
+  "main": "terrapin.js",
+  "dependencies": {
+    "cytoscape": "^2.7.16",
+    "d3": "^4.11.0",
+    "d3-bboxCollide": "^1.0.3",
+    "jquery": "^3.2.1",
+    "level": "^1.6.0",
+    "levelgraph": "^2.0.1",
+    "levelgraph-jsonld": "^1.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cnstntn-kndrtv/terrapin.git"
+  },
+  "author": "Constantin Kondratyev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cnstntn-kndrtv/terrapin/issues"
+  },
+  "homepage": "https://github.com/cnstntn-kndrtv/terrapin#readme"
+}
